@@ -7,7 +7,7 @@ import (
 )
 
 type MCP struct {
-	Name string `yaml:"name" usage:"Name of the MCP server"`
+	Name string `yaml:"name,omitempty" usage:"Name of the MCP server"`
 
 	SSE        MCPSSE        `yaml:"sse,omitempty" usage:"[SSE] "`
 	Streamable MCPStreamable `yaml:"streamable,omitempty" usage:"[Streamable] "`

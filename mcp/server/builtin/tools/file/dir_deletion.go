@@ -21,7 +21,7 @@ type DirectoryDeletionResult struct {
 }
 
 var DirectoryDeletionTool = mcp.NewTool("deleteDirectory",
-	mcp.WithDescription("Delete a directory (including all files ans subdirectories) on the user's system."),
+	mcp.WithDescription("Delete a directory (including all files and subdirectories) on the user's system."),
 	mcp.WithString("path",
 		mcp.Required(),
 		mcp.Description("The path to the directory to delete. Use '~' as placeholder for the user's home directory."),

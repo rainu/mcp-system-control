@@ -107,8 +107,8 @@ func printHelpEnv(output io.Writer) {
 	fmt.Fprintf(output, "Envronment variables with the prefix ")
 	fmt.Fprintf(output, EnvironmentPrefix)
 	fmt.Fprintf(output, " will be used. For example:\n")
-	fmt.Fprintf(output, EnvironmentPrefix+"0=--llm.openai.api-key=MY_KEY\n")
-	fmt.Fprintf(output, EnvironmentPrefix+"1=--llm.backend=openai\n")
+	fmt.Fprintf(output, EnvironmentPrefix+"0=--mcp.name=MyMcpServer\n")
+	fmt.Fprintf(output, EnvironmentPrefix+"1=--mcp.sse.bindAddress=:8080\n")
 }
 
 func generateYamlSkeleton(output io.Writer) {
@@ -125,48 +125,15 @@ func dumpYaml(output io.Writer, c *model.Config) {
 }
 
 func printHelpConfig(output io.Writer) {
-	fmt.Fprintf(output, "Each available argument can be transformed into the corresponding yaml path. For example: '--llm.openai.api-key.plain=MY_KEY'\n")
-	//yaml.NewEncoder(output, yaml.Indent(2)).Encode(model.Config{
-	//	MainProfile: model.Profile{
-	//		LLM: llm.LLMConfig{
-	//			OpenAI: llm.OpenAIConfig{
-	//				APIKey: common.Secret{
-	//					Plain: "MY_KEY",
-	//				},
-	//			},
-	//		},
-	//	},
-	//})
-	//fmt.Fprintf(output, "\nYou can define profiles. Each profile inherits the values of the 'root-config'. For example:\n")
-	//yaml.NewEncoder(output, yaml.Indent(2)).Encode(model.Config{
-	//	MainProfile: model.Profile{
-	//		LLM: llm.LLMConfig{
-	//			Backend: "openai",
-	//			OpenAI: llm.OpenAIConfig{
-	//				APIKey: common.Secret{
-	//					Plain: "OPENAI_API_KEY",
-	//				},
-	//			},
-	//			CallOptions: llm.CallOptionsConfig{
-	//				Prompt: llm.PromptConfig{
-	//					System: "You are a helpful assistant.",
-	//				},
-	//			},
-	//		},
-	//	},
-	//	Profiles: map[string]*model.Profile{
-	//		"evil": {
-	//			LLM: llm.LLMConfig{
-	//				CallOptions: llm.CallOptionsConfig{
-	//					Prompt: llm.PromptConfig{
-	//						System: "You are a evil assistant.",
-	//					},
-	//				},
-	//			},
-	//		},
-	//	},
-	//})
-	fmt.Fprintf(output, "\nThe profile 'evil' will use the same api-key as the root-config, but it will overwrite the system-prompt.\n")
+	fmt.Fprintf(output, "Each available argument can be transformed into the corresponding yaml path. For example: '--mcp.sse.bindAddress=:8080'\n")
+	s := ":8080"
+	yaml.NewEncoder(output, yaml.Indent(2)).Encode(model.Config{
+		MCP: model.MCP{
+			SSE: model.MCPSSE{
+				BindAddress: &s,
+			},
+		},
+	})
 
 	fmt.Fprintf(output, "\nYaml lookup file locations:\n")
 	for _, location := range yamlLookupLocations() {
@@ -211,7 +178,7 @@ func printHelpExpression(output io.Writer) {
 
 func printHelpTool(output io.Writer) {
 	fmt.Fprintf(output, "Tool-Usage:"+
-		"\nYou can define many functions that can be used by the LLM."+
+		"\nYou can define many functions that can be used by the MCP-Server."+
 		"\nThe functions can be given by argument, Environment or config file."+
 		"\nThe fields are more or less the same for all three methods:\n")
 
@@ -253,76 +220,32 @@ func printHelpTool(output io.Writer) {
 				Required: []string{"message"},
 			},
 			AdditionalEnvironment: map[string]string{
-				"ASK_MAI_ARGS": "$@",
+				"MCP_SYSTEM_CONTROL_ARGS": "$@",
 			},
 			Command:  "/usr/bin/echo",
 			Approval: "false",
 		},
 	}
 
-	//fmt.Fprintf(output, "\nJSON:\n")
-	//
-	//fdm := map[string]toolCommand.FunctionDefinition{}
-	//for _, def := range exampleDefs {
-	//	jsonDef, _ := json.MarshalIndent(def, "", " ")
-	//	fmt.Fprintf(output, "\n%s\n", jsonDef)
-	//
-	//	fdm[def.Name] = def
-	//}
-	//
-	//fmt.Fprintf(output, "\nYAML:\n\n")
-	//ye := yaml.NewEncoder(output, yaml.Indent(2))
-	//ye.Encode(model.Profile{LLM: llm.LLMConfig{Tool: tools.Config{Custom: fdm}}})
-	//
-	//fmt.Fprintf(output, "\nIt is also possible to use tools from a MCP-Server. You can connect many MCP-Servers in different way.")
-	//fmt.Fprintf(output, "\nAs a command (stdio):\n")
-	//fmt.Fprint(output, yacl.NewConfig(&iMcp.Command{}).HelpFlags())
-	//
-	//fmt.Fprintf(output, "\nAs a rest-server (http):\n")
-	//fmt.Fprint(output, yacl.NewConfig(&iMcp.Http{}).HelpFlags())
-	//
-	//fmt.Fprintf(output, "\nYAML-Example:\n\n")
-	//ye.Encode(model.Profile{
-	//	LLM: llm.LLMConfig{
-	//		Tool: tools.Config{
-	//			McpServer: map[string]iMcp.Server{
-	//				"github": {
-	//					Command: iMcp.Command{
-	//						Name:      "docker",
-	//						Arguments: []string{"run", "--rm", "-i", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN=github_...", "ghcr.io/github/github-mcp-server"},
-	//					},
-	//					Approval: approval.Always,
-	//				},
-	//				"gitlab": {
-	//					Command: iMcp.Command{
-	//						Name:      "npx",
-	//						Arguments: []string{"-y", "@modelcontextprotocol/server-gitlab"},
-	//						Environment: map[string]string{
-	//							"GITLAB_PERSONAL_ACCESS_TOKEN": "<YOUR_TOKEN>",
-	//							"GITLAB_API_URL":               "https://gitlab.com/api/v4",
-	//						},
-	//					},
-	//					Approval: expression.VarNameContext + `.definition.name === 'push_files'`,
-	//				},
-	//				"http": {
-	//					Http: iMcp.Http{
-	//						BaseUrl: "http://localhost:8080/api/v1",
-	//						Headers: map[string]string{
-	//							"Authorization": "Bearer TOKEN",
-	//						},
-	//					},
-	//					Approval: approval.Never,
-	//				},
-	//			},
-	//		},
-	//	},
-	//})
+	fmt.Fprintf(output, "\nJSON:\n")
 
-	fmt.Fprintf(output, "\nThe approval is always an js-expression. It will be evaluated each time the LLM calls the function.\n")
+	fdm := map[string]toolCommand.FunctionDefinition{}
+	for _, def := range exampleDefs {
+		jsonDef, _ := json.MarshalIndent(def, "", " ")
+		fmt.Fprintf(output, "\n%s\n", jsonDef)
+
+		fdm[def.Name] = def
+	}
+
+	fmt.Fprintf(output, "\nYAML:\n\n")
+	ye := yaml.NewEncoder(output, yaml.Indent(2))
+	ye.Encode(model.Config{Custom: fdm})
+
+	fmt.Fprintf(output, "\nThe approval is always an js-expression. It will be evaluated each time the MCP-Server calls the function.\n")
 	fmt.Fprintf(output, "If the expression returns true, the user must give the approval before the function will be executed.\n")
 	fmt.Fprintf(output, "If the expression returns false, the user will NOT be asked for his approval.\n")
 	fmt.Fprintf(output, "You can use the same variables and functions which are available in all other expressions (see --help-expression):\n")
-	fmt.Fprintf(output, "The expression have access to the raw and parsed arguments from the LLM and the function definition itelf:\n")
+	fmt.Fprintf(output, "The expression have access to the raw and parsed arguments from the MCP-Server and the function definition itself:\n")
 	fmt.Fprintf(output, "  const %s = ", expression.VarNameContext)
 
 	je := json.NewEncoder(output)
