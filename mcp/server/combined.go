@@ -9,9 +9,9 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 )
 
-func NewServer(version string, bConfig model.BuiltIns, cConfig map[string]command.FunctionDefinition) *server.MCPServer {
+func NewServer(name, version string, bConfig model.BuiltIns, cConfig map[string]command.FunctionDefinition) *server.MCPServer {
 	s := server.NewMCPServer(
-		"ask-mai",
+		name,
 		version,
 		server.WithToolCapabilities(false),
 	)

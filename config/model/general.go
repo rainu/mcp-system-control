@@ -10,11 +10,12 @@ type Config struct {
 
 	DebugConfig DebugConfig `yaml:",inline,omitempty"`
 
+	MCP MCP `yaml:"mcp,omitempty" usage:"MCP server configuration: "`
+
 	BuiltIns BuiltIns                              `yaml:"builtin,omitempty" usage:"Built-in tool "`
 	Custom   map[string]command.FunctionDefinition `yaml:"custom,omitempty" usage:"Custom tool definition "`
 
-	Version     bool   `yaml:"version,omitempty" short:"v" usage:"Show the version"`
-	HttpAddress string `yaml:"http-address,omitempty" usage:"Address to listen on for MCP-HTTP server (e.g. \":8080\"). If not set, the server will run in stdio mode."`
+	Version bool `yaml:"version,omitempty" short:"v" usage:"Show the version"`
 
 	Help Help `yaml:",inline,omitempty"`
 }

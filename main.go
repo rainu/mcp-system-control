@@ -23,14 +23,28 @@ func main() {
 	}
 	slog.SetLogLoggerLevel(*cfg.DebugConfig.LogLevelParsed)
 
-	ms := mcpServer.NewServer(versionLine(), cfg.BuiltIns, cfg.Custom)
+	ms := mcpServer.NewServer(
+		cfg.MCP.Name,
+		versionLine(),
+		cfg.BuiltIns,
+		cfg.Custom,
+	)
 
 	var err error
-	if cfg.HttpAddress != "" {
-		slog.Info(fmt.Sprintf("Starting streamable http server on http://%s/mcp", cfg.HttpAddress))
-		err = server.NewStreamableHTTPServer(ms).Start(cfg.HttpAddress)
+
+	if cfg.MCP.SSE.BindAddress != nil {
+		s := server.NewSSEServer(ms, cfg.MCP.SSE.Options()...)
+		slog.Info(fmt.Sprintf("Starting SSE server on http://%s%s", *cfg.MCP.SSE.BindAddress, s.CompleteSsePath()))
+
+		err = s.Start(*cfg.MCP.SSE.BindAddress)
+	} else if cfg.MCP.Streamable.BindAddress != nil {
+		s := server.NewStreamableHTTPServer(ms, cfg.MCP.Streamable.Options()...)
+		slog.Info(fmt.Sprintf("Starting streamable server on http://%s%s", *cfg.MCP.Streamable.BindAddress, cfg.MCP.Streamable.EndpointPath))
+
+		err = s.Start(*cfg.MCP.Streamable.BindAddress)
 	} else {
-		err = server.ServeStdio(ms)
+		slog.Info("Starting stdio server")
+		err = server.ServeStdio(ms, cfg.MCP.Stdio.Options()...)
 	}
 
 	if err != nil {
