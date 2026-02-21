@@ -1,12 +1,12 @@
 package model
 
 import (
-	"mcp-system-control/config/model/approval"
+	"mcp-system-control/approval"
 )
 
 type CommandExecution struct {
 	Disable  bool   `yaml:"disable,omitempty" usage:"disable"`
-	Approval string `yaml:"approval,omitempty" usage:"Needs no user approval to be executed"`
+	Approval string `yaml:"approval,omitempty" usage:"Expression to check if user approval is needed before execute this tool"`
 }
 
 func (c *CommandExecution) SetDefaults() {

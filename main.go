@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"mcp-system-control/approval"
 	"mcp-system-control/config"
 	mcpServer "mcp-system-control/mcp/server"
 	"os"
@@ -28,6 +29,7 @@ func main() {
 		versionLine(),
 		cfg.BuiltIns,
 		cfg.Custom,
+		approval.NewRequester(cfg.Approval),
 	)
 
 	var err error

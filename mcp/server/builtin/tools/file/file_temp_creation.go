@@ -56,7 +56,7 @@ var FileTempCreationToolHandler = func(ctx context.Context, request mcp.CallTool
 		return nil, err
 	}
 
-	file, err := os.CreateTemp("", "ask-mai.*"+pArgs.Suffix)
+	file, err := os.CreateTemp("", "mcp-system-control.*"+pArgs.Suffix)
 	if err != nil {
 		return nil, fmt.Errorf("error creating file: %w", err)
 	}

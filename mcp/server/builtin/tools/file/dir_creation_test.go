@@ -43,7 +43,7 @@ func TestTool_DirCreation_WithHome(t *testing.T) {
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
-	testDirName := fmt.Sprintf(".ask-mai-%d", time.Now().Unix())
+	testDirName := fmt.Sprintf(".mcp-system-control-%d", time.Now().Unix())
 	testDirPath := path.Join(home, testDirName)
 	defer func() {
 		os.Remove(testDirPath)

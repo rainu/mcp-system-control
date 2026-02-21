@@ -139,7 +139,7 @@ r.trim()`,
 		})
 
 		t.Run(fmt.Sprintf("TestCommandExpression_CommandFn_FileReference_%d", i), func(t *testing.T) {
-			tmp, err := os.CreateTemp("", "ask-mai-test.*.js")
+			tmp, err := os.CreateTemp("", "mcp-system-control-test.*.js")
 			require.NoError(t, err)
 			require.NoError(t, os.WriteFile(tmp.Name(), []byte(tt.expression), 0666))
 

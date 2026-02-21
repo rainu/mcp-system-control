@@ -47,7 +47,7 @@ func (c CommandDescriptor) Run(ctx context.Context) ([]byte, error) {
 		cmdBuild = cmdBuild.WithWorkingDirectory(c.WorkingDirectory)
 	}
 
-	oFile, err := os.CreateTemp("", "ask-mai.mcp.command.*")
+	oFile, err := os.CreateTemp("", "mcp-system-control.mcp.command.*")
 	if err != nil {
 		return nil, fmt.Errorf("could not create temporary file: %w", err)
 	}

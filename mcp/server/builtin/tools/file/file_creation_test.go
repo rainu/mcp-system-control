@@ -80,7 +80,7 @@ func TestTool_FileCreation_HomeResolving(t *testing.T) {
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
-	testFilePath := path.Join(home, fmt.Sprintf(".ask-mai-%d", time.Now().Unix()))
+	testFilePath := path.Join(home, fmt.Sprintf(".mcp-system-control-%d", time.Now().Unix()))
 	require.NoError(t, err)
 	defer func() {
 		os.Remove(testFilePath)

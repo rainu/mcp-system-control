@@ -3,6 +3,7 @@ package custom
 import (
 	"context"
 	"encoding/json"
+	"mcp-system-control/approval"
 
 	"mcp-system-control/config/model/command"
 
@@ -10,13 +11,13 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 )
 
-func NewServer(version string, cfg map[string]command.FunctionDefinition) *server.MCPServer {
+func NewServer(version string, cfg map[string]command.FunctionDefinition, approvalRequester approval.Requester) *server.MCPServer {
 	s := server.NewMCPServer(
-		"ask-mai",
+		"mcp-system-control",
 		version,
 		server.WithToolCapabilities(false),
 	)
-	AddTools(s, cfg)
+	AddTools(s, cfg, approvalRequester)
 
 	return s
 }
@@ -33,7 +34,7 @@ func handlerFor(definition command.FunctionDefinition) server.ToolHandlerFunc {
 	}
 }
 
-func AddTools(s *server.MCPServer, cfg map[string]command.FunctionDefinition) {
+func AddTools(s *server.MCPServer, cfg map[string]command.FunctionDefinition, approvalRequester approval.Requester) {
 	for name, definition := range cfg {
 		t := mcp.Tool{
 			Name:        name,

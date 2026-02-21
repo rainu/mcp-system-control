@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mcp-system-control/approval"
 	"net/http"
 	"os"
 	"strings"
 
 	"mcp-system-control/config/model"
-	"mcp-system-control/config/model/approval"
 	toolCommand "mcp-system-control/config/model/command"
 	"mcp-system-control/expression"
 	mcpCommand "mcp-system-control/mcp/server/builtin/tools/command"

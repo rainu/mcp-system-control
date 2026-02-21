@@ -105,7 +105,7 @@ func TestTool_Command_Exec_Unknown(t *testing.T) {
 
 func getTestClient(t *testing.T) *client.Client {
 	s := server.NewMCPServer(
-		"ask-mai",
+		"mcp-system-control",
 		"test-version",
 		server.WithToolCapabilities(false),
 	)

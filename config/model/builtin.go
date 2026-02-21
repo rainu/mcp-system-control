@@ -1,7 +1,7 @@
 package model
 
 import (
-	"mcp-system-control/config/model/approval"
+	"mcp-system-control/approval"
 	"mcp-system-control/mcp/server/builtin/tools/command"
 	"mcp-system-control/mcp/server/builtin/tools/file"
 	"mcp-system-control/mcp/server/builtin/tools/system"

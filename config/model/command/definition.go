@@ -2,7 +2,7 @@ package command
 
 import (
 	"context"
-	"mcp-system-control/config/model/approval"
+	"mcp-system-control/approval"
 
 	"github.com/mark3labs/mcp-go/mcp"
 )

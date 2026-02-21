@@ -45,7 +45,7 @@ func TestApproval_NeedsApproval_Logging(t *testing.T) {
 }
 
 func TestApproval_NeedsApproval_Run(t *testing.T) {
-	tmp, err := os.CreateTemp("", "ask-mai-test-approval")
+	tmp, err := os.CreateTemp("", "mcp-system-control-test-approval")
 	require.NoError(t, err)
 
 	tmp.Close()

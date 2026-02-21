@@ -1,7 +1,7 @@
 package model
 
 import (
-	"mcp-system-control/config/model/approval"
+	"mcp-system-control/approval"
 )
 
 type ChangeTimes struct {

@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"mcp-system-control/config/model/approval"
 	"mcp-system-control/config/model/command"
 )
 
@@ -10,7 +11,9 @@ type Config struct {
 
 	DebugConfig DebugConfig `yaml:",inline,omitempty"`
 
-	MCP MCP `yaml:"mcp,omitempty" usage:"MCP server configuration: "`
+	MCP MCP `yaml:"mcp,omitempty" usage:"MCP server: "`
+
+	Approval approval.Approval `yaml:"approval,omitempty" usage:"Approval "`
 
 	BuiltIns BuiltIns                              `yaml:"builtin,omitempty" usage:"Built-in tool "`
 	Custom   map[string]command.FunctionDefinition `yaml:"custom,omitempty" usage:"Custom tool definition "`

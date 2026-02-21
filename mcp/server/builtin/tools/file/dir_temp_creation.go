@@ -36,7 +36,7 @@ var DirectoryTempCreationToolHandler = func(ctx context.Context, request mcp.Cal
 		return nil, fmt.Errorf("error parsing arguments: %w", err)
 	}
 
-	path, err := os.MkdirTemp("", "ask-mai.*")
+	path, err := os.MkdirTemp("", "mcp-system-control.*")
 	if err != nil {
 		return nil, fmt.Errorf("error creating directory: %w", err)
 	}

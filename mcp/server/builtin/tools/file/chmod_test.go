@@ -77,7 +77,7 @@ func TestTool_Chmod_Requirements2(t *testing.T) {
 
 func getTestClient(t *testing.T, serverConf func(s *server.MCPServer)) *client.Client {
 	s := server.NewMCPServer(
-		"ask-mai",
+		"mcp-system-control",
 		"test-version",
 		server.WithToolCapabilities(false),
 	)

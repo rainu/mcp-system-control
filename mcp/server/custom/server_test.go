@@ -29,7 +29,7 @@ func TestNewServer(t *testing.T) {
 				return []byte("OK"), nil
 			},
 		},
-	})
+	}, nil)
 
 	c := client.NewClient(transport.NewInProcessTransport(testServer))
 

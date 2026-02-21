@@ -55,7 +55,7 @@ func TestTool_FileAppending_HomeResolving(t *testing.T) {
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 
-	testFile, err := os.Create(path.Join(home, fmt.Sprintf(".ask-mai-%d", time.Now().Unix())))
+	testFile, err := os.Create(path.Join(home, fmt.Sprintf(".mcp-system-control-%d", time.Now().Unix())))
 	require.NoError(t, err)
 	defer func() {
 		testFile.Close()

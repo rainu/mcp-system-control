@@ -1,76 +1,109 @@
 package builtin
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"mcp-system-control/approval"
 	"mcp-system-control/config/model"
 	"mcp-system-control/mcp/server/builtin/tools/command"
 	"mcp-system-control/mcp/server/builtin/tools/file"
 	"mcp-system-control/mcp/server/builtin/tools/system"
 
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
 
-func NewServer(version string, cfg model.BuiltIns) *server.MCPServer {
-	s := server.NewMCPServer(
-		"ask-mai",
-		version,
-		server.WithToolCapabilities(false),
-	)
-	AddTools(s, cfg)
+func AddTools(s *server.MCPServer, cfg model.BuiltIns, approvalRequester approval.Requester) {
+	addTool := func(tool mcp.Tool, handler server.ToolHandlerFunc) {
+		as := approval.Approval(cfg.GetApprovalFor(tool.Name))
 
-	return s
-}
+		if as == approval.Never {
+			s.AddTool(tool, handler)
+		} else if as == approval.Always {
+			s.AddTool(tool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+				approved, err := approvalRequester.WaitForApproval(ctx, &request)
+				if err != nil {
+					return nil, fmt.Errorf("error while waiting for approval: %w", err)
+				}
+				if !approved {
+					return nil, fmt.Errorf("tool call not approved")
+				}
 
-func AddTools(s *server.MCPServer, cfg model.BuiltIns) {
+				return handler(ctx, request)
+			})
+		} else {
+			s.AddTool(tool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+				argsAsJson, err := json.Marshal(request.Params.Arguments)
+				if err != nil {
+					slog.Error("Failed to marshal arguments", "error", err)
+					return nil, fmt.Errorf("failed to marshal arguments")
+				}
+				if as.NeedsApproval(ctx, string(argsAsJson), nil) {
+					approved, err := approvalRequester.WaitForApproval(ctx, &request)
+					if err != nil {
+						return nil, fmt.Errorf("error while waiting for approval: %w", err)
+					}
+					if !approved {
+						return nil, fmt.Errorf("tool call not approved")
+					}
+				}
+				return handler(ctx, request)
+			})
+		}
+	}
+
 	if !cfg.SystemTime.Disable {
-		s.AddTool(system.SystemTimeTool, system.SystemTimeToolHandler)
+		addTool(system.SystemTimeTool, system.SystemTimeToolHandler)
 	}
 	if !cfg.SystemInfo.Disable {
-		s.AddTool(system.SystemInfoTool, system.SystemInfoToolHandler)
+		addTool(system.SystemInfoTool, system.SystemInfoToolHandler)
 	}
 	if !cfg.Environment.Disable {
-		s.AddTool(system.EnvironmentTool, system.EnvironmentToolHandler)
+		addTool(system.EnvironmentTool, system.EnvironmentToolHandler)
 	}
 
 	if !cfg.ChangeMode.Disable {
-		s.AddTool(file.ChangeModeTool, file.ChangeModeToolHandler)
+		addTool(file.ChangeModeTool, file.ChangeModeToolHandler)
 	}
 	if !cfg.ChangeOwner.Disable {
-		s.AddTool(file.ChangeOwnerTool, file.ChangeOwnerToolHandler)
+		addTool(file.ChangeOwnerTool, file.ChangeOwnerToolHandler)
 	}
 	if !cfg.ChangeTimes.Disable {
-		s.AddTool(file.ChangeTimesTool, file.ChangeTimesToolHandler)
+		addTool(file.ChangeTimesTool, file.ChangeTimesToolHandler)
 	}
 
 	if !cfg.DirectoryCreation.Disable {
-		s.AddTool(file.DirectoryCreationTool, file.DirectoryCreationToolHandler)
+		addTool(file.DirectoryCreationTool, file.DirectoryCreationToolHandler)
 	}
 	if !cfg.DirectoryDeletion.Disable {
-		s.AddTool(file.DirectoryDeletionTool, file.DirectoryDeletionToolHandler)
+		addTool(file.DirectoryDeletionTool, file.DirectoryDeletionToolHandler)
 	}
 	if !cfg.DirectoryTempCreation.Disable {
-		s.AddTool(file.DirectoryTempCreationTool, file.DirectoryTempCreationToolHandler)
+		addTool(file.DirectoryTempCreationTool, file.DirectoryTempCreationToolHandler)
 	}
 
 	if !cfg.FileAppending.Disable {
-		s.AddTool(file.FileAppendingTool, file.FileAppendingToolHandler)
+		addTool(file.FileAppendingTool, file.FileAppendingToolHandler)
 	}
 	if !cfg.FileCreation.Disable {
-		s.AddTool(file.FileCreationTool, file.FileCreationToolHandler)
+		addTool(file.FileCreationTool, file.FileCreationToolHandler)
 	}
 	if !cfg.FileDeletion.Disable {
-		s.AddTool(file.FileDeletionTool, file.FileDeletionToolHandler)
+		addTool(file.FileDeletionTool, file.FileDeletionToolHandler)
 	}
 	if !cfg.FileReading.Disable {
-		s.AddTool(file.FileReadingTool, file.FileReadingToolHandler)
+		addTool(file.FileReadingTool, file.FileReadingToolHandler)
 	}
 	if !cfg.FileTempCreation.Disable {
-		s.AddTool(file.FileTempCreationTool, file.FileTempCreationToolHandler)
+		addTool(file.FileTempCreationTool, file.FileTempCreationToolHandler)
 	}
 	if !cfg.Stats.Disable {
-		s.AddTool(file.StatsTool, file.StatsToolHandler)
+		addTool(file.StatsTool, file.StatsToolHandler)
 	}
 
 	if !cfg.CommandExec.Disable {
-		s.AddTool(command.CommandExecutionTool, command.CommandExecutionToolHandler)
+		addTool(command.CommandExecutionTool, command.CommandExecutionToolHandler)
 	}
 }
