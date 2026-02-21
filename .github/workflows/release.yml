@@ -1,0 +1,116 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.6'
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Run tests
+        run: go test -v ./...
+
+  build:
+    name: Build
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux]
+        goarch: [amd64, arm64, arm]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.6'
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ matrix.goos }}-${{ matrix.goarch }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Set version flags
+        id: ldflags
+        run: |
+          echo -n " -X 'main.commitHash=$(git rev-parse HEAD)'" >> ldflags
+          echo -n " -X 'main.branch=$(git rev-parse --abbrev-ref HEAD)'" >> ldflags
+          echo -n " -X 'main.tag=${GITHUB_REF#refs/tags/}'" >> ldflags
+          echo -n " -X 'main.built=$(date +%s%3N)'" >> ldflags
+
+          echo "ldflags=$(cat ldflags)" >> $GITHUB_OUTPUT
+
+      - name: Build binary
+        run: |
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-s -w ${{ steps.ldflags.outputs.ldflags }}" -o mcp-system-control-${{ matrix.goos }}-${{ matrix.goarch }} .
+
+      - name: Create checksum
+        run: |
+          sha256sum mcp-system-control-${{ matrix.goos }}-${{ matrix.goarch }} > mcp-system-control-${{ matrix.goos }}-${{ matrix.goarch }}.sha256
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-system-control-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: |
+            mcp-system-control-${{ matrix.goos }}-${{ matrix.goarch }}
+            mcp-system-control-${{ matrix.goos }}-${{ matrix.goarch }}.sha256
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release files
+        run: |
+          mkdir release
+          find artifacts -type f -exec mv {} release/ \;
+          cd release
+          sha256sum mcp-system-control-* > checksums.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
