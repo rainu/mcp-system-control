@@ -2,11 +2,10 @@ package approval
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"log/slog"
 	cfgModel "mcp-system-control/config/model/approval"
 	"os/exec"
-	"strings"
 
 	"github.com/mark3labs/mcp-go/mcp"
 )
@@ -17,6 +16,11 @@ type requester struct {
 }
 
 func NewRequester(cfg cfgModel.Approval) Requester {
+	// Initialize language for approval messages
+	if err := SetLanguage(cfg.Language); err != nil {
+		slog.Warn("Failed to set approval message language, using auto-detect", "error", err)
+	}
+
 	result := requester{
 		cfg: cfg,
 	}
@@ -65,25 +69,6 @@ func (r *requester) WaitForApproval(ctx context.Context, request *mcp.CallToolRe
 		return r.delegate.WaitForApproval(ctx, request)
 	}
 	return false, fmt.Errorf("unable to request approval to user")
-}
-
-// formatApprovalMessage formats the tool request into a human-readable message
-func formatApprovalMessage(request *mcp.CallToolRequest) string {
-	var sb strings.Builder
-
-	sb.WriteString(fmt.Sprintf("Tool: %s\n\n", request.Params.Name))
-
-	if request.Params.Arguments != nil {
-		// Try to format arguments nicely
-		if argsBytes, err := json.MarshalIndent(request.Params.Arguments, "", "  "); err == nil {
-			sb.WriteString("Arguments:\n")
-			sb.WriteString(string(argsBytes))
-		} else {
-			sb.WriteString(fmt.Sprintf("Arguments: %v", request.Params.Arguments))
-		}
-	}
-
-	return sb.String()
 }
 
 // isCommandAvailable checks if a command is available in PATH

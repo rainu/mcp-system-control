@@ -15,12 +15,25 @@ const (
 type Approval struct {
 	Timeout   time.Duration `yaml:"timeout,omitempty" usage:"Timeout for user"`
 	Requester RequesterType `yaml:"requester,omitempty" usage:"Requester type to use (auto, zenity, kdialog, notify-send, custom)"`
+	Language  string        `yaml:"language,omitempty" usage:"Language for approval messages (auto, en, de). Default: auto (system language)"`
 
 	// Tool-specific configurations
 	Zenity     ZenityConfig     `yaml:"zenity,omitempty" usage:"Zenity-specific: "`
 	KDialog    KDialogConfig    `yaml:"kdialog,omitempty" usage:"KDialog-specific: "`
 	NotifySend NotifySendConfig `yaml:"notify_send,omitempty" usage:"NotifySend-specific: "`
 	Custom     CustomConfig     `yaml:"custom,omitempty" usage:"Custom script-based: "`
+}
+
+func (c *Approval) SetDefaults() {
+	if c.Timeout == 0 {
+		c.Timeout = 30 * time.Second
+	}
+	if c.Requester == "" {
+		c.Requester = RequesterAuto
+	}
+	if c.Language == "" {
+		c.Language = "auto"
+	}
 }
 
 type ZenityConfig struct {
@@ -80,13 +93,4 @@ func (c *NotifySendConfig) SetDefaults() {
 type CustomConfig struct {
 	Script string   `yaml:"script,omitempty" usage:"Path to the custom script to execute for approval"`
 	Args   []string `yaml:"args,omitempty" usage:"Additional arguments to pass to the script"`
-}
-
-func (c *Approval) SetDefaults() {
-	if c.Timeout == 0 {
-		c.Timeout = 30 * time.Second
-	}
-	if c.Requester == "" {
-		c.Requester = RequesterAuto
-	}
 }
