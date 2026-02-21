@@ -1,3 +1,8 @@
+[![Go](https://github.com/rainu/mcp-system-control/actions/workflows/build.yml/badge.svg)](https://github.com/rainu/mcp-system-control/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/rainu/mcp-system-control/branch/main/graph/badge.svg)](https://codecov.io/gh/rainu/mcp-system-control)
+[![Go Report Card](https://goreportcard.com/badge/github.com/rainu/mcp-system-control)](https://goreportcard.com/report/github.com/rainu/mcp-system-control)
+[![Go Reference](https://pkg.go.dev/badge/github.com/rainu/mcp-system-control.svg)](https://pkg.go.dev/github.com/rainu/mcp-system-control)
+
 # mcp-system-control
 
 This is an MCP-Server which allows a LLM to control **the system**. 
@@ -32,6 +37,14 @@ mcp-system-control --mcp.sse.bindAddress=":8080"
 
 ```shell
 mcp-system-control --mcp.streamable.bindAddress=":8080"
+```
+
+### Test
+
+To test the server, you can use the [following command](https://modelcontextprotocol.io/docs/tools/inspector):
+
+```shell
+npx @modelcontextprotocol/inspector
 ```
 
 ## User approval
